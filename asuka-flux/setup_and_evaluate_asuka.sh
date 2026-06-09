@@ -46,13 +46,13 @@ source "$ENV_NAME"/bin/activate
 
 # Install dependencies
 echo "[*] Upgrading pip..."
-pip install --upgrade pip
+"$ENV_NAME"/bin/pip install --upgrade pip
 
 echo "[*] Installing PyTorch with CUDA 12.1 compatibility..."
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+"$ENV_NAME"/bin/pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 
 echo "[*] Installing ASUKA pipeline requirements..."
-pip install numpy pyyaml tqdm pillow scipy huggingface_hub diffusers==0.30.2 transformers==4.45.2 omegaconf einops accelerate opencv-python
+"$ENV_NAME"/bin/pip install numpy pyyaml tqdm pillow scipy huggingface_hub diffusers==0.30.2 transformers==4.45.2 omegaconf einops accelerate opencv-python
 
 # Dynamically write check/download weights script
 echo "[*] Ensuring checkpoint download helper is written..."
@@ -124,7 +124,7 @@ print("[*] Checkpoints verification/download complete.")
 EOF
 
 # Run downloader
-python download_weights.py
+"$ENV_NAME"/bin/python download_weights.py
 rm download_weights.py
 
 # Define default paths (user server paths)
@@ -147,7 +147,7 @@ OUT_DIR=${OUT_DIR:-$DEFAULT_OUT_DIR}
 echo "---------------------------------------------------------------------"
 
 echo "[*] Running ASUKA model validation for the 5 target images..."
-python validate_asuka.py \
+"$ENV_NAME"/bin/python validate_asuka.py \
     --image_dir "$IMG_DIR" \
     --mask_dir "$MASK_DIR" \
     --output_dir "$OUT_DIR"
