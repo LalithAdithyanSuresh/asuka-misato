@@ -33,8 +33,9 @@ fi
 
 # Create python virtual environment
 ENV_NAME="asuka-env"
-if [ ! -d "$ENV_NAME" ]; then
-    echo "[*] Creating virtual environment: $ENV_NAME..."
+if [ ! -d "$ENV_NAME" ] || [ ! -f "$ENV_NAME/bin/pip" ] || [ ! -f "$ENV_NAME/bin/python" ]; then
+    echo "[*] Creating/Re-creating virtual environment: $ENV_NAME..."
+    rm -rf "$ENV_NAME"
     python3 -m venv "$ENV_NAME"
 else
     echo "[*] Virtual environment $ENV_NAME already exists."
