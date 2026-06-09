@@ -3,6 +3,9 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
+# Set Hugging Face cache directory to a writable local path to avoid permission issues in /home/cks
+export HF_HOME="/tmp/cks/.cache/huggingface"
+
 # Automatically run inside a GNU screen session named 'asuka' if screen is available
 if [ -z "$STY" ]; then
     if command -v screen >/dev/null 2>&1; then
