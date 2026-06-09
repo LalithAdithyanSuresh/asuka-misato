@@ -56,7 +56,7 @@ echo "[*] Installing PyTorch with CUDA 12.1 compatibility..."
 "$ENV_NAME"/bin/pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 
 echo "[*] Installing ASUKA pipeline requirements..."
-"$ENV_NAME"/bin/pip install numpy pyyaml tqdm pillow scipy huggingface_hub diffusers==0.30.2 transformers==4.45.2 omegaconf einops accelerate opencv-python invisible-watermark
+"$ENV_NAME"/bin/pip install numpy pyyaml tqdm pillow scipy huggingface_hub diffusers==0.30.2 transformers==4.45.2 omegaconf einops accelerate opencv-python invisible-watermark timm
 
 # Dynamically write check/download weights script
 echo "[*] Ensuring checkpoint download helper is written..."
