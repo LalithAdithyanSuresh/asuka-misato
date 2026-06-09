@@ -279,8 +279,10 @@ def main():
 
         # Blend with original image using the mask
         gt_np = np.array(pil_img)
-        mask_np = np.array(pil_mask) / 255.0
-        mask_np = mask_np[:, :, None] # broadcastable shape
+        # Resize original mask to match original image dimensions for correct broadcasting
+        pil_mask_resized = pil_mask.resize((orig_w, orig_h), Image.Resampling.NEAREST)
+        mask_np = np.array(pil_mask_resized) / 255.0
+        mask_np = mask_np[:, :, None] # broadcastable shape (orig_h, orig_w, 1)
         merged_np = (pred_resized_np * mask_np + gt_np * (1.0 - mask_np)).clip(0, 255).astype(np.uint8)
 
         # Calculate PSNR
