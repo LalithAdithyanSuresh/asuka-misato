@@ -25,6 +25,46 @@ def calc_psnr(gt, pre):
         return 100.0
     return 20 * np.log10(255.0 / np.sqrt(mse))
 
+def generate_comparison_grid(gt_np, mask_np, pred_resized_np):
+    # gt_np: (H, W, 3) RGB numpy array
+    # mask_np: (H, W, 1) float numpy array (range 0.0 to 1.0, where 1.0 is masked)
+    # pred_resized_np: (H, W, 3) RGB numpy array (blended result)
+    
+    # 1. Ground Truth (GT)
+    img_gt = gt_np.copy()
+    
+    # 2. Mask + GT (GT with a semi-transparent red overlay on the mask)
+    bool_mask = mask_np[:, :, 0] > 0.5
+    overlay = gt_np.copy()
+    overlay[bool_mask] = [255, 0, 0]
+    img_mask_gt = (0.7 * gt_np + 0.3 * overlay).clip(0, 255).astype(np.uint8)
+    
+    # 3. Prediction (blended inpainted result)
+    img_pred = pred_resized_np.copy()
+    
+    # 4. Diff (Red-Green error map over grayscale GT)
+    # Pure numpy luma formula to convert RGB to grayscale
+    gray_gt = (0.299 * gt_np[:, :, 0] + 0.587 * gt_np[:, :, 1] + 0.114 * gt_np[:, :, 2]).astype(np.uint8)
+    gray_gt_3ch = np.stack([gray_gt, gray_gt, gray_gt], axis=-1)
+    
+    # Absolute difference error across RGB channels
+    err = np.mean(np.abs(gt_np.astype(np.float64) - pred_resized_np.astype(np.float64)), axis=-1)
+    # Scale error to make differences more visible
+    scaled_err = np.clip(err * 3.0, 0, 255)
+    
+    # Red-Green colormap: pure red for high error, pure green for zero error
+    diff_color = np.zeros_like(gt_np)
+    diff_color[:, :, 0] = scaled_err # Red
+    diff_color[:, :, 1] = 255.0 - scaled_err # Green
+    diff_color[:, :, 2] = 0 # Blue
+    
+    # Blend structure (40%) with error color (60%)
+    img_diff = (0.4 * gray_gt_3ch + 0.6 * diff_color).clip(0, 255).astype(np.uint8)
+    
+    # Concatenate horizontally
+    grid = np.concatenate([img_gt, img_mask_gt, img_pred, img_diff], axis=1)
+    return grid
+
 def get_alignment_clip():
     from src.flux.modules.layers import SingleStreamBlockAsuka
     dim = 768
@@ -294,6 +334,13 @@ def main():
         save_path = os.path.join(args.output_dir, cat, save_name)
         Image.fromarray(merged_np).save(save_path)
         print(f"Saved output to: {save_path}")
+
+        # Save comparison grid (GT, Mask+GT, Pred, Diff)
+        grid_np = generate_comparison_grid(gt_np, mask_np, merged_np)
+        grid_name = f"{img_id}_{mask_id}_comparison.png"
+        grid_path = os.path.join(args.output_dir, cat, grid_name)
+        Image.fromarray(grid_np).save(grid_path)
+        print(f"Saved comparison grid to: {grid_path}")
 
         results.append({
             'Category': cat,
